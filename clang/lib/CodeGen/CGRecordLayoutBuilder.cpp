@@ -657,10 +657,15 @@ void CGRecordLowering::computeVolatileBitfields() {
 }
 
 void CGRecordLowering::accumulateVPtrs() {
-  if (Layout.hasOwnVFPtr())
-    Members.push_back(MemberInfo(CharUnits::Zero(), MemberInfo::VFPtr,
-        llvm::FunctionType::get(getIntNType(32), /*isVarArg=*/true)->
-            getPointerTo()->getPointerTo()));
+  if (Layout.hasOwnVFPtr()) {
+    auto vfptr = MemberInfo(CharUnits::Zero(), MemberInfo::VFPtr,
+                            llvm::FunctionType::get(getIntNType(32), /*isVarArg=*/true)
+                                ->getPointerTo()
+                                ->getPointerTo());
+    Members.push_back(vfptr);
+    auto CoopSignature = MemberInfo(getSize(vfptr.Data), MemberInfo::Field, getIntNType(64));
+    Members.push_back(CoopSignature);
+  }
   if (Layout.hasOwnVBPtr())
     Members.push_back(MemberInfo(Layout.getVBPtrOffset(), MemberInfo::VBPtr,
         llvm::Type::getInt32PtrTy(Types.getLLVMContext())));

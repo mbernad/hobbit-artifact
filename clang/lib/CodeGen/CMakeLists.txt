@@ -115,6 +115,7 @@ add_clang_library(clangCodeGen
   Targets/X86.cpp
   Targets/XCore.cpp
   VarBypassDetector.cpp
+  UCSRLCoop.cpp
 
   DEPENDS
   intrinsics_gen

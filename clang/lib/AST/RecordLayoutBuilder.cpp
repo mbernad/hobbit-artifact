@@ -1071,6 +1071,10 @@ void ItaniumRecordLayoutBuilder::LayoutNonVirtualBases(
 
     setSize(getSize() + PtrWidth);
     setDataSize(getSize());
+
+    CharUnits coopSignatureWidth = CharUnits::fromQuantity(8);
+    setSize(getSize() + coopSignatureWidth);
+    setDataSize(getSize());
   }
 
   // Now lay out the non-virtual bases.

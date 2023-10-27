@@ -21,6 +21,7 @@
 #include "CodeGenModule.h"
 #include "CodeGenPGO.h"
 #include "TargetInfo.h"
+#include "UCSRLCoop.h"
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/ASTLambda.h"
 #include "clang/AST/Attr.h"
@@ -1225,6 +1226,45 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
       EmitTypeCheck(
           isa<CXXConstructorDecl>(MD) ? TCK_ConstructorCall : TCK_MemberCall,
           Loc, CXXABIThisValue, ThisTy, CXXABIThisAlignment, SkippedChecks);
+    }
+
+    if(MD->isVirtual() && ShouldCheckCOOPSignature(MD->getParent())) {
+      auto *vfMDNode = llvm::MDNode::get(getLLVMContext(), llvm::MDString::get(getLLVMContext(), "ucsrl.virtual.function"));
+      CurFn->setMetadata("ucsrl.virtual.function_mark", vfMDNode);
+
+      auto VTablePointers = getVTablePointers(MD->getParent());
+
+      auto *Vptr = VTablePointers.begin();
+
+      auto *CalculatedSignature = CalculateCOOPSignatureValue(this, *Vptr);
+      auto *LoadedSignature = LoadSavedCOOPSignatureValue(this, *Vptr);
+      LoadedSignature = Builder.CreatePtrToInt(LoadedSignature, Builder.getInt64Ty(), "coop.loaded_to_int");
+
+      auto *AllVptrsCorrect = Builder.CreateICmpEQ(CalculatedSignature, LoadedSignature, "coop.compare");
+
+      Vptr++;
+
+      for(auto *End = VTablePointers.end(); Vptr != End; Vptr++) {
+        CalculatedSignature = CalculateCOOPSignatureValue(this, *Vptr);
+        LoadedSignature = LoadSavedCOOPSignatureValue(this, *Vptr);
+        LoadedSignature = Builder.CreatePtrToInt(LoadedSignature, Builder.getInt64Ty(), "coop.loaded_to_int");
+        AllVptrsCorrect = Builder.CreateAnd(AllVptrsCorrect, Builder.CreateICmpEQ(CalculatedSignature, LoadedSignature, "coop.compare"), "coop.compare.and");
+      }
+
+      auto *ParentFunction = Builder.GetInsertBlock()->getParent();
+      auto *CoopSignatureMatchBlock = llvm::BasicBlock::Create(getLLVMContext(), "CoopSignatureMatchBlock", ParentFunction);
+      auto *CoopSignatureMismatchBlock = llvm::BasicBlock::Create(getLLVMContext(), "CoopSignatureMismatch", ParentFunction);
+      Builder.CreateCondBr(AllVptrsCorrect, CoopSignatureMatchBlock,CoopSignatureMismatchBlock);
+
+      Builder.SetInsertPoint(CoopSignatureMismatchBlock);
+
+      std::vector<llvm::Type *> ArgTypes{Builder.getInt64Ty()};
+      auto *ExitFunctionType = llvm::FunctionType::get(Builder.getVoidTy(), ArgTypes, false);
+      auto ExitFunction = Fn->getParent()->getOrInsertFunction("exit", ExitFunctionType);
+      Builder.CreateCall(ExitFunction, Builder.getInt64(147));
+      Builder.CreateUnreachable();
+
+      Builder.SetInsertPoint(CoopSignatureMatchBlock);
     }
   }
 

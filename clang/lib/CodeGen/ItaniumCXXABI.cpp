@@ -3816,6 +3816,8 @@ llvm::Constant *ItaniumRTTIBuilder::BuildTypeInfo(
   llvm::GlobalVariable *TypeName = GetAddrOfTypeName(Ty, Linkage);
   llvm::Constant *TypeNameField;
 
+  llvm::ConstantInt *CoopSecret = llvm::ConstantInt::get(CGM.Int64Ty, 0x4242424242424242);
+
   // If we're supposed to demote the visibility, be sure to set a flag
   // to use a string comparison for type_info comparisons.
   ItaniumCXXABI::RTTIUniquenessKind RTTIUniqueness =
@@ -3832,6 +3834,8 @@ llvm::Constant *ItaniumRTTIBuilder::BuildTypeInfo(
   } else {
     TypeNameField = TypeName;
   }
+
+  Fields.push_back(CoopSecret);
   Fields.push_back(TypeNameField);
 
   switch (Ty->getTypeClass()) {
