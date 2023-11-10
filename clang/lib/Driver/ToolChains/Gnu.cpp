@@ -541,6 +541,10 @@ void tools::gnutools::Linker::ConstructJob(Compilation &C, const JobAction &JA,
                   D.getLTOMode() == LTOK_Thin);
   }
 
+  CmdArgs.push_back("-whole-archive");
+  CmdArgs.push_back(ToolChain.getCompilerRTArgString(Args, "coop_hash", ToolChain::FT_Static));
+  CmdArgs.push_back("-no-whole-archive");
+
   if (Args.hasArg(options::OPT_Z_Xlinker__no_demangle))
     CmdArgs.push_back("--no-demangle");
 
