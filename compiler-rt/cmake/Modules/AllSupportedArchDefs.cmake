@@ -91,3 +91,5 @@ endif()
 if (WIN32)
   set(ALL_ORC_SUPPORTED_ARCH ${X86_64})
 endif()
+
+set(ALL_UCSRL_COOP_SUPPORTED_ARCH ${X86_64})

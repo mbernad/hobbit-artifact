@@ -160,6 +160,12 @@ llvm::Value *CalculateCOOPSignatureValue(CodeGenFunction *CGF,
   CoopSignatureValue = Builder.CreateXor(
       CoopSignatureValue, Builder.getInt64(UCSRLRandomNumber), "coop.xorsecret");
 
+  std::vector<llvm::Type *> ArgTypes{Builder.getInt64Ty()};
+  std::vector<llvm::Value *> ArgValues{CoopSignatureValue};
+  auto *UCSRLCoopHashFunctionType = llvm::FunctionType::get(Builder.getInt64Ty(), ArgTypes, false);
+  auto UCSRLCoopHashFunction = CGM.getModule().getOrInsertFunction("_Z15ucsrl_coop_hashl", UCSRLCoopHashFunctionType);
+  CoopSignatureValue = Builder.CreateCall(UCSRLCoopHashFunction, ArgValues, "coop.hash");
+
   return CoopSignatureValue;
 }
 
