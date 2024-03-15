@@ -160,6 +160,18 @@ llvm::Value *CalculateCOOPSignatureValue(CodeGenFunction *CGF,
   CoopSignatureValue = Builder.CreateXor(
       CoopSignatureValue, Builder.getInt64(UCSRLRandomNumber), "coop.xorsecret");
 
+  // https://rigtorp.se/notes/hashing/ moremur_hash
+  auto *MM_Step1 =  Builder.CreateLShr(CoopSignatureValue, 27);
+  auto *MM_Step2 = Builder.CreateXor(MM_Step1, CoopSignatureValue);
+  auto *MM_Step3 = Builder.CreateMul(MM_Step2, Builder.getInt64(0x3C79AC492BA7B653UL));
+  auto *MM_Step4 =  Builder.CreateLShr(MM_Step3, 33);
+  auto *MM_Step5 = Builder.CreateXor(MM_Step4, MM_Step3);
+  auto *MM_Step6 = Builder.CreateMul(MM_Step5, Builder.getInt64(0x1C69B3F74AC4AE35UL));
+  auto *MM_Step7 =  Builder.CreateLShr(MM_Step6, 27);
+  auto *MM_Step8 = Builder.CreateXor(MM_Step6, MM_Step7);
+
+  CoopSignatureValue = MM_Step8;
+
   return CoopSignatureValue;
 }
 
