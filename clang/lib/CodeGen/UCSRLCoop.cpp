@@ -1,15 +1,24 @@
 #include "UCSRLCoop.h"
 
+#include "llvm/Support/JSON.h"
+
+#include <fstream>
+#include <sstream>
+#include <ucsrl_class_assign/json.hpp>
+
+// for convenience
+using json = nlohmann::json;
+
 static llvm::cl::OptionCategory UCSRLCoopCat("UCSRL Coop Signature Options");
 
-static llvm::cl::opt<long long> UCSRLCoopSecret(
+static llvm::cl::opt<uint64_t> UCSRLCoopSecret(
     "ucsrl-coop-secret",
     llvm::cl::desc(
         "Secret used for COOP signature calculation (16 digits hex number)"),
     llvm::cl::value_desc("secret"), llvm::cl::cat(UCSRLCoopCat),
     llvm::cl::init(0x4242424242424242));
 
-static long long UCSRLRandomNumber = UCSRLCoopSecret;
+static uint64_t UCSRLRandomNumber = UCSRLCoopSecret;
 
 static Address CheckAndApplyNonVirtualAndVirtualOffset(
     CodeGenFunction &CGF, CodeGenFunction::VPtr Vptr,
@@ -144,6 +153,23 @@ llvm::Value *CalculateCOOPSignatureValue(CodeGenFunction *CGF,
 
   CGBuilderTy &Builder = CGF->Builder;
   CodeGenModule &CGM = CGF->CGM;
+  std::ifstream filename("/home/hias/dev/unibw/llvm-project-llvmorg-17.0.3/clang/lib/CodeGen/ucsrl_class_assign/omnetpp.json");
+
+  auto CurRDName = std::to_string(Vptr.VTableClass->getID()) + "(" + Vptr.VTableClass->getQualifiedNameAsString() + ")";
+  llvm::errs() << "Calculate " << CurRDName << "\n";
+
+  auto ParsedJSON = json::parse(filename);
+  auto UniqueRecordDeclID = Vptr.VTableClass->getQualifiedNameAsString();
+  llvm::ConstantInt *COOPXorSecret;
+
+  if (ParsedJSON.contains(UniqueRecordDeclID)) {
+    auto AssignedSecretString = ParsedJSON[UniqueRecordDeclID].get<std::string>();
+    uint64_t AssignedSecret = std::stoull(AssignedSecretString, nullptr, 16);
+
+    COOPXorSecret = Builder.getInt64(AssignedSecret);
+  } else {
+    COOPXorSecret = Builder.getInt64(UCSRLRandomNumber);
+  }
 
   Address VTableField = CheckAndApplyNonVirtualAndVirtualOffset(
       *CGF, Vptr, Vptr.VTableClass, Vptr.NearestVBase);
@@ -157,8 +183,8 @@ llvm::Value *CalculateCOOPSignatureValue(CodeGenFunction *CGF,
       VTableField.getPointer(), Builder.getInt64Ty(), "coop.thisptr");
   auto *CoopSignatureValue =
       Builder.CreateXor(thisAddressValue, VtablePtr, "coop.xorvptr");
-  CoopSignatureValue = Builder.CreateXor(
-      CoopSignatureValue, Builder.getInt64(UCSRLRandomNumber), "coop.xorsecret");
+
+  CoopSignatureValue = Builder.CreateXor(CoopSignatureValue, COOPXorSecret, "coop.xorsecret");
 
   // https://rigtorp.se/notes/hashing/ moremur_hash
   auto *MM_Step1 =  Builder.CreateLShr(CoopSignatureValue, 27);

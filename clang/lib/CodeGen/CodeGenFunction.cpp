@@ -1228,6 +1228,20 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
           Loc, CXXABIThisValue, ThisTy, CXXABIThisAlignment, SkippedChecks);
     }
 
+    const auto *RD = MD->getParent();
+    auto CurRDName = std::to_string(RD->getID()) + "(" + RD->getQualifiedNameAsString() + ")";
+    llvm::errs() << CurRDName << "\n";
+
+    for (auto base : RD->bases()) {
+      auto base_name = std::to_string(base.getType()->getAsCXXRecordDecl()->getID()) + "(" + base.getType()->getAsCXXRecordDecl()->getQualifiedNameAsString() + ")";
+      llvm::errs() << CurRDName << " --> " << base_name << "\n";
+    }
+
+    for (auto base : RD->vbases()) {
+      auto base_name = std::to_string(base.getType()->getAsCXXRecordDecl()->getID()) + "(" + base.getType()->getAsCXXRecordDecl()->getQualifiedNameAsString() + ")";
+      llvm::errs() << CurRDName << " *-> " << base_name << "\n";
+    }
+
     if(MD->isVirtual() && ShouldCheckCOOPSignature(MD->getParent())) {
       auto *vfMDNode = llvm::MDNode::get(getLLVMContext(), llvm::MDString::get(getLLVMContext(), "ucsrl.virtual.function"));
       CurFn->setMetadata("ucsrl.virtual.function_mark", vfMDNode);
@@ -1242,6 +1256,8 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
 
       auto *AllVptrsCorrect = Builder.CreateICmpEQ(CalculatedSignature, LoadedSignature, "coop.compare");
 
+      // TODO: check and  discuss in paper if this is actually needed
+      /*
       Vptr++;
 
       for(auto *End = VTablePointers.end(); Vptr != End; Vptr++) {
@@ -1250,6 +1266,7 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
         LoadedSignature = Builder.CreatePtrToInt(LoadedSignature, Builder.getInt64Ty(), "coop.loaded_to_int");
         AllVptrsCorrect = Builder.CreateAnd(AllVptrsCorrect, Builder.CreateICmpEQ(CalculatedSignature, LoadedSignature, "coop.compare"), "coop.compare.and");
       }
+      */
 
       auto *ParentFunction = Builder.GetInsertBlock()->getParent();
       auto *CoopSignatureMatchBlock = llvm::BasicBlock::Create(getLLVMContext(), "CoopSignatureMatchBlock", ParentFunction);
