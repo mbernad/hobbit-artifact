@@ -18,6 +18,13 @@ static llvm::cl::opt<uint64_t> UCSRLCoopSecret(
     llvm::cl::value_desc("secret"), llvm::cl::cat(UCSRLCoopCat),
     llvm::cl::init(0x4242424242424242));
 
+static llvm::cl::opt<std::string> HobbitChaAssignmentFile(
+    "hca",
+    llvm::cl::desc(
+        "File consisting of a CHA assignment"),
+    llvm::cl::value_desc("file path"), llvm::cl::cat(UCSRLCoopCat),
+    llvm::cl::init("/home/hias/dev/unibw/llvm-project-llvmorg-17.0.3/clang/lib/CodeGen/ucsrl_class_assign/hobbit-class-assignments.json"));
+
 static uint64_t UCSRLRandomNumber = UCSRLCoopSecret;
 
 static Address CheckAndApplyNonVirtualAndVirtualOffset(
@@ -153,8 +160,7 @@ llvm::Value *CalculateCOOPSignatureValue(CodeGenFunction *CGF,
 
   CGBuilderTy &Builder = CGF->Builder;
   CodeGenModule &CGM = CGF->CGM;
-  // TODO: add possibility to specify this file
-  std::ifstream filename("/home/hias/dev/unibw/llvm-project-llvmorg-17.0.3/clang/lib/CodeGen/ucsrl_class_assign/class_assignments.json");
+  std::ifstream filename(HobbitChaAssignmentFile.c_str());
 
   auto CurRDName = std::to_string(Vptr.VTableClass->getID()) + "(" + Vptr.VTableClass->getQualifiedNameAsString() + ")";
   llvm::errs() << "HOBBIT-CHA: " << "Calculate " << CurRDName << "\n";
