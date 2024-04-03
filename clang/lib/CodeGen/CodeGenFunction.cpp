@@ -1230,16 +1230,16 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
 
     const auto *RD = MD->getParent();
     auto CurRDName = std::to_string(RD->getID()) + "(" + RD->getQualifiedNameAsString() + ")";
-    llvm::errs() << CurRDName << "\n";
+    llvm::errs() << "HOBBIT-CHA: " << CurRDName << "\n";
 
     for (auto base : RD->bases()) {
       auto base_name = std::to_string(base.getType()->getAsCXXRecordDecl()->getID()) + "(" + base.getType()->getAsCXXRecordDecl()->getQualifiedNameAsString() + ")";
-      llvm::errs() << CurRDName << " --> " << base_name << "\n";
+      llvm::errs() << "HOBBIT-CHA: " << CurRDName << " --> " << base_name << "\n";
     }
 
     for (auto base : RD->vbases()) {
       auto base_name = std::to_string(base.getType()->getAsCXXRecordDecl()->getID()) + "(" + base.getType()->getAsCXXRecordDecl()->getQualifiedNameAsString() + ")";
-      llvm::errs() << CurRDName << " *-> " << base_name << "\n";
+      llvm::errs() << "HOBBIT-CHA: " << CurRDName << " *-> " << base_name << "\n";
     }
 
     if(MD->isVirtual() && ShouldCheckCOOPSignature(MD->getParent())) {

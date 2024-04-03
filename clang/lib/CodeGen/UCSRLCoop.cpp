@@ -153,10 +153,11 @@ llvm::Value *CalculateCOOPSignatureValue(CodeGenFunction *CGF,
 
   CGBuilderTy &Builder = CGF->Builder;
   CodeGenModule &CGM = CGF->CGM;
-  std::ifstream filename("/home/hias/dev/unibw/llvm-project-llvmorg-17.0.3/clang/lib/CodeGen/ucsrl_class_assign/omnetpp.json");
+  // TODO: add possibility to specify this file
+  std::ifstream filename("/home/hias/dev/unibw/llvm-project-llvmorg-17.0.3/clang/lib/CodeGen/ucsrl_class_assign/class_assignments.json");
 
   auto CurRDName = std::to_string(Vptr.VTableClass->getID()) + "(" + Vptr.VTableClass->getQualifiedNameAsString() + ")";
-  llvm::errs() << "Calculate " << CurRDName << "\n";
+  llvm::errs() << "HOBBIT-CHA: " << "Calculate " << CurRDName << "\n";
 
   auto ParsedJSON = json::parse(filename);
   auto UniqueRecordDeclID = Vptr.VTableClass->getQualifiedNameAsString();
@@ -168,6 +169,8 @@ llvm::Value *CalculateCOOPSignatureValue(CodeGenFunction *CGF,
 
     COOPXorSecret = Builder.getInt64(AssignedSecret);
   } else {
+    llvm::errs() << "HOBBIT-CHA: " << "No CHA assignment found!!! (" << UniqueRecordDeclID << ")" << "\n";
+    // Vptr.VTableClass->dump();
     COOPXorSecret = Builder.getInt64(UCSRLRandomNumber);
   }
 
