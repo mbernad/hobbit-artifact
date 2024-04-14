@@ -1256,8 +1256,6 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
 
       auto *AllVptrsCorrect = Builder.CreateICmpEQ(CalculatedSignature, LoadedSignature, "coop.compare");
 
-      // TODO: check and  discuss in paper if this is actually needed
-      /*
       Vptr++;
 
       for(auto *End = VTablePointers.end(); Vptr != End; Vptr++) {
@@ -1266,7 +1264,6 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
         LoadedSignature = Builder.CreatePtrToInt(LoadedSignature, Builder.getInt64Ty(), "coop.loaded_to_int");
         AllVptrsCorrect = Builder.CreateAnd(AllVptrsCorrect, Builder.CreateICmpEQ(CalculatedSignature, LoadedSignature, "coop.compare"), "coop.compare.and");
       }
-      */
 
       auto *ParentFunction = Builder.GetInsertBlock()->getParent();
       auto *CoopSignatureMatchBlock = llvm::BasicBlock::Create(getLLVMContext(), "CoopSignatureMatchBlock", ParentFunction);
