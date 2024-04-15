@@ -1229,6 +1229,7 @@ void CodeGenFunction::StartFunction(GlobalDecl GD, QualType RetTy,
     }
 
     if(MD->isVirtual() && ShouldCheckCOOPSignature(MD->getParent())) {
+      llvm::errs() << "HOBBIT-MLG: Calculate and verify signature for method: " << MD->getQualifiedNameAsString() << " in class " << MD->getParent()->getID() << "(" << MD->getParent()->getQualifiedNameAsString() << ")\n";
       auto *vfMDNode = llvm::MDNode::get(getLLVMContext(), llvm::MDString::get(getLLVMContext(), "ucsrl.virtual.function"));
       CurFn->setMetadata("ucsrl.virtual.function_mark", vfMDNode);
 

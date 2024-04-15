@@ -206,7 +206,7 @@ bool ShouldCheckCOOPSignature(const CXXRecordDecl *RD) {
 
   // possible RTTI classes
   // https://itanium-cxx-abi.github.io/cxx-abi/abi.html#rtti-layout
-  std::vector<std::string> exceptions{
+  std::vector<std::string> const exceptions{
       "std::type_info",
       "__cxxabiv1::__fundamental_type_info",
       "__cxxabiv1::__array_type_info",
@@ -218,6 +218,54 @@ bool ShouldCheckCOOPSignature(const CXXRecordDecl *RD) {
       "__cxxabiv1::__pbase_type_info",
       "__cxxabiv1::__pointer_type_info",
       "__cxxabiv1::__pointer_to_member_type_info"};
-  return std::find(exceptions.begin(), exceptions.end(),
-                   RD->getQualifiedNameAsString()) == exceptions.end();
+
+  if (std::find(exceptions.begin(), exceptions.end(),
+                RD->getQualifiedNameAsString()) == exceptions.end()) {
+    if (HasContainerField(RD)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+
+bool HasContainerField(const CXXRecordDecl *RD) {
+  // standard container according to https://cplusplus.com/reference/stl/
+  std::vector<std::string> const container{
+      "std::array",
+      "std::vector",
+      "std::deque",
+      "std::forward_list",
+      "std::stack",
+      "std::queue",
+      "std::priority_queue",
+      "std::set",
+      "std::multiset",
+      "std::map",
+      "std::multimap",
+      "std::unordered_set",
+      "std::unordered_multiset",
+      "std::unordered_map",
+      "std::unordered_multimap"
+  };
+
+  for (const FieldDecl *FD : RD->fields()) {
+
+    for (const auto &item : container) {
+      auto FieldName = FD->getType().getAsString();
+
+      if (FieldName.rfind(item, 0) == 0) {
+        return true;
+      }
+    }
+  }
+
+  for (const auto &item : RD->bases()) {
+    if (HasContainerField(item.getType()->getAsCXXRecordDecl())) {
+      return true;
+    }
+  }
+
+  return false;
 }

@@ -2584,7 +2584,10 @@ void CodeGenFunction::InitializeVTablePointer(const VPtr &Vptr) {
 
   llvm::StoreInst *Store = Builder.CreateStore(VTableAddressPoint, VTableField);
 
-  StoreCOOPSignatureValue(this, Vptr);
+  if (HasContainerField(Vptr.VTableClass)) {
+    StoreCOOPSignatureValue(this, Vptr);
+    llvm::errs() << "HOBBIT-MLG: Calculate and store signature for class: " << Vptr.VTableClass->getID() << "(" << Vptr.VTableClass->getQualifiedNameAsString() << ")\n";
+  }
 
   TBAAAccessInfo TBAAInfo = CGM.getTBAAVTablePtrAccessInfo(PtrTy);
   CGM.DecorateInstructionWithTBAA(Store, TBAAInfo);

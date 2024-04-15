@@ -25,3 +25,5 @@ llvm::Value *StoreCOOPSignatureValue(CodeGenFunction *CGF,
                                      CodeGenFunction::VPtr Vptr);
 
 bool ShouldCheckCOOPSignature(const CXXRecordDecl *CXXRecordDecl);
+
+bool HasContainerField(const CXXRecordDecl *CXXRecordDecl);
