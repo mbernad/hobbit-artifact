@@ -10,6 +10,9 @@
 //
 //===----------------------------------------------------------------------===//
 
+// Contains modifications (Copyright 2024 Matthias Bernad)
+
+
 #include "CGRecordLayout.h"
 #include "CGCXXABI.h"
 #include "CodeGenTypes.h"
