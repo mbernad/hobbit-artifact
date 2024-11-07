@@ -10,6 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// Contains modifications (Copyright 2024 Matthias Bernad)
+
 #include "CodeGenFunction.h"
 #include "CGBlocks.h"
 #include "CGCUDARuntime.h"
