@@ -6,6 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// Contains modifications (Copyright 2024 Matthias Bernad)
+
 #ifndef ____LIBUNWIND_CONFIG_H__
 #define ____LIBUNWIND_CONFIG_H__
 

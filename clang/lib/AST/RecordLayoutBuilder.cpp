@@ -6,6 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// Contains modifications (Copyright 2024 Matthias Bernad)
+
 #include "clang/AST/ASTContext.h"
 #include "clang/AST/ASTDiagnostic.h"
 #include "clang/AST/Attr.h"
