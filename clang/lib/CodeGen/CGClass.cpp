@@ -10,6 +10,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// Contains modifications (Copyright 2024 Matthias Bernad)
+
 #include "CGBlocks.h"
 #include "CGCXXABI.h"
 #include "CGDebugInfo.h"

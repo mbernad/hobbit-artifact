@@ -17,6 +17,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// Contains modifications (Copyright 2024 Matthias Bernad)
+
 #include "CGCXXABI.h"
 #include "CGCleanup.h"
 #include "CGRecordLayout.h"

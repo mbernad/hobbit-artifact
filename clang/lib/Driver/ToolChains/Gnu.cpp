@@ -6,6 +6,8 @@
 //
 //===----------------------------------------------------------------------===//
 
+// Contains modifications (Copyright 2024 Matthias Bernad)
+
 #include "Gnu.h"
 #include "Arch/ARM.h"
 #include "Arch/CSKY.h"
